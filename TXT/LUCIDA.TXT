@@ -1,0 +1,361 @@
+These blurbs were written by the font designers, Charles Bigelow
+and Kris Holmes.
+
+---------------------------------------------------------------
+LUCIDA FAMILY OVERVIEW
+
+Lucida is a family of harmonized typefaces that includes a variety of styles:
+seriffed and sans-serif, roman and italic, normal and bold weights, scripts,
+blackletter, icons, and symbols. This extra-large family of type styles is
+often called a "super-family" or "extended-family" because it extends beyond
+the usual font family that contains just roman and italic, normal and bold.
+Because of the richness and variety of its different styles, Lucida allows
+new forms of typography for electronic communication, printing and
+publishing. 
+
+Between all the different Lucida styles, the capital heights, x-heights
+(height of a lower-case x), and main stem weights are coordinated. Lucida
+makes it easy for users to achieve variety and harmony by mixing and matching
+different fonts in the same text and page. The designed coordination of so
+many different styles means that when different Lucida fonts are used
+together, the effect is lively and interesting but without the confusion of
+randomly mingled and uncoordinated fonts. 
+
+Even the Lucida symbol font (Wingdings) is coordinated with the alphabetic 
+fonts. Most of the signs and symbols in Wingdings are the same size as the 
+capitals of the other Lucida fonts. This makes the special signs and 
+symbols easy to use. 
+
+The standard way of combining different type styles is to use one style
+(usually roman) for main text, another (usually italic or bold) for
+differentiation or emphasis, another for headlines, and so on. The Lucida
+family is especially well suited to such traditional uses, but the
+coordinated design of the Lucida fonts also allows more adventurous users to
+experiment with new ways of mixing and matching fonts. Styles can be changed
+inside words or between capitals and lower-case. Icons, signs, and symbols
+can be more freely integrated with alphabetic characters. Script and
+blackletter designs can be reintroduced into normal typography. These kinds
+of experiments are especially effective in display typography, as in
+headlines, posters, and the like, but they can also be effective in memos,
+faxes, and other documents, where they are like exotic spices in the plain
+printed page. 
+
+---------------------------------------------------------------
+
+LUCIDA BRIGHT
+
+Lucida Bright has a brilliant look that comes from high contrast between
+strong stems and fine hairlines, sharply cut details of serifs and joins, and
+tight letter fitting. Lucida Bright Regular has a formal, authoritative, and
+elegant appearance, to which Lucida Bright Italic adds dynamic action for a
+distinctive, lively pattern. Lucida Bright Demibold and Demibold Italic are
+strong enough for emphasis and headings, but light enough for full paragraphs
+of text.  The crisply defined forms of all the Lucida Bright faces are
+effective at larger sizes in titles, headlines and display. 
+
+Lucida Bright's large x-height helps text look big at small point sizes, and
+its tight fitting and slightly narrow letterforms help fit more words on a
+line.  The Lucida Bright family of typefaces is especially effective where
+legibility and economy are important, as in the text columns of newsletters,
+manuals, magazines, and newspapers. For wider text columns, as in books,
+Lucida Bright is most effective with  additional "leading" or line spacing to
+separate the text column into clearly defined rows that the reader's eye can
+follow easily. 
+
+Lucida Bright is a modern design of the computer age, but its inner forms are
+based on writing styles of the Italian Renaissance, and its sophisticated
+detailing is reminiscent of printing types of the French Enlightenment. It
+can be classified as a "Transitional" or "Reale" style of typeface, like the
+18th century designs of Baskerville or Fournier. 
+
+Professional tips. Like many typefaces, Lucida Bright can be "fine-tuned" for
+small sizes (8 point and below) by adding a few units of letterspacing
+(positive "tracking"). At all text sizes, words or lines in all capitals can
+be given a more rhythmic pattern by careful amounts of additional
+letterspacing, though many graphic designers prefer to space capitals more
+tightly at larger sizes. 
+
+Complementary Lucida fonts. Lucida Sans is the perfect sans-serif companion
+to Lucida Bright, because both families are based on the same basic inner
+forms, thus guaranteeing harmony on the page. For ornament and decoration,
+the Wingdings font has alternate ampersands, delicate rosettes, graceful
+leaf and vine ornaments that all harmonize with Lucida Bright. To spice 
+up Lucida Bright Italic, the capitals of Lucida Calligraphy can be 
+substituted for a more playful, lively effect. For an even more striking 
+and elegant companion to Lucida Roman, use Lucida Calligraphy, but add 
+enough extra line spacing that the longer ascenders and descenders of
+Lucida Calligraphy do not collide. For a sophisticated look when setting text
+in all capitals in either Lucida Bright Italic or Lucida Calligraphy, use the
+Lucida Calligraphy swash capitals at the beginnings and ends of words, and
+Lucida Bright Italic plain capitals in between. 
+
+----------------------------------------------------------------------------
+
+LUCIDA SANS
+
+Lucida Sans brings a human look to the sans-serif mode. As in Lucida Bright,
+the inner forms of Lucida Sans are based on writing styles of the Italian
+Renaissance and have a more relaxed, hand-made rhythm than the rigid shapes
+of "grotesque" sans-serifs based on 19th century industrial type styles.  The
+large x-height, clear forms and open spacing of Lucida Sans create a
+rhythmic, readable text at all sizes throughout a wide range of office and
+professional documents. Lucida Sans is legible at small sizes in directories,
+tables, and forms, is strong and clear at text sizes in correspondence,
+memos, telefaxes, instruction sheets, and manuals, is emphatic and
+attention-getting at large sizes in headlines and titles, and, especially in
+the Demibold weights, arresting at very large sizes in posters and displays.
+In all capital settings, Lucida Sans capitals make a strong, readable, and
+harmonious pattern that is ultimately derived from the ancient Roman
+inscriptions that were admired and copied by Renaissance scribes.  
+
+Lucida Sans Italic is a dynamic and distinctive design that appears formal
+yet handwritten. It is a true cursive, a "running" style, because its inner
+movement is based on formal chancery handwriting of the Renaissance. Unlike
+most sans-serif italics, it is not merely a slanted version of the roman. 
+Used by itself, Lucida Sans Italic gives a personal, active, but disciplined
+look to any text. This blend of action, rhythm, and precision is even more
+emphatic in Lucida Sans Demibold Italic. 
+
+Professional tips. For larger sizes (above 14 point), Lucida Sans can be
+"fine-tuned" by subtracting a few units of letterspacing (negative
+"tracking") for a tighter, more active look. At text sizes, all capital
+settings can be given a more rhythmic pattern by careful amounts of
+additional letterspacing (positive "tracking"), though many graphic designers
+prefer to space capitals more tightly at larger sizes.
+
+Complementary Lucida fonts. Lucida Bright is the perfect sans-serif companion
+to Lucida Sans because both families are based on the same basic inner forms,
+thus ensuring harmony on the page while maintaining a distinctive difference
+in style. At smaller sizes and lower resolutions, including telefaxing, or
+for a more technical and utilitarian appearance of correspondence and
+documents, Lucida Fax also makes an excellent seriffed companion to Lucida
+Sans.
+
+---------------------------------------------------------------------------
+
+LUCIDA SANS TYPEWRITER
+
+Lucida Sans Typewriter adapts the humanized look of Lucida Sans to the fixed
+pitch of typewriter fonts, in which all letters have the same set width. The
+vertical proportions, strong stem weights, and crisp details of Lucida Sans
+are continued in Lucida Sans Typewriter. The result is a strong, clear
+fixed-pitch design that can be used wherever a functional, legible monospaced
+font is needed, such as "typewritten" correspondence, memos, and telefaxes,
+commercial forms, invoices, packing lists, programming and data processing
+applications, line printer emulations, terminal emulations. 
+
+Lucida Sans Typewriter Bold has the same set width as the Regular weight, and
+can be combined with it for emphasis, headings, titles, etc. Both the Regular
+and the Bold weights have Oblique companions which are slanted versions of
+the roman. The Obliques can be used in place of underlining for
+differentiation or emphasis.  
+
+Professional tips. Lucida Sans typewriter is economical in setting: at a 10
+point size, it is equivalent to a 12 pitch typewriter font. For good
+legibility in long lines of 80 characters or more, add extra line spacing
+equivalent to 20% or more of the font size. For example, add 2 points of line
+spacing to 10 point text, to make a total of 12 points from base-line to
+base-line. This is equivalent to "pica" line spacing or escapement on a
+typewriter.  
+
+Complementary Lucida fonts. Both Lucida Bright and Lucida Fax can be used as
+seriffed faces to accompany Lucida Sans Typewriter. 
+
+----------------------------------------------------------------------------
+
+LUCIDA HANDWRITING
+
+To a business world dominated by formal, traditional fonts, Lucida
+Handwriting brings a refreshing and modern informality.
+
+Lucida Handwriting is a lively, connected script that brings warmth and
+personality to the printed page. More mature but less formal than traditional
+school penmanship, Lucida Handwriting combines strong basic letter shapes
+into rapidly flowing word sequences. The casual and confident capitals and
+deftly joined lower-case give a relaxed, friendly flair to a wide variety of
+messages, whether memos, greetings, announcements, placards, or posters.
+Lucida Handwriting also gives an informal, individual look to addresses on
+envelopes and labels, and to salutations and signatures on form letters. The
+capitals make an attractive word pattern on their own, in all capital
+setting, and also combine well with the rhythmically joined lower-case.
+Lucida Handwriting brings a new look to office printing and invites users to
+invent new uses for it. 
+
+Almost all of Lucida Handwriting's extra signs and symbols - from arrows to
+smile faces - are designed as true, hand-written shapes, to maintain a
+hand-written feeling throughout all texts. Because it was developed
+especially for digital typography and desktop publishing, Lucida Handwriting
+is surprisingly legible at small sizes on screen and printer, and can be used
+where other scripts might not succeed. Lucida Handwriting is coordinated in
+weight and letter heights with other fonts in the Lucida family, so that it
+can be used in harmony with the normal weights of other Lucida styles,
+maintaining the same approximate weight and size as its companion fonts. 
+
+When combining Lucida Handwriting in the same lines as other Lucida fonts, be
+sure to provide enough line spacing. In general, Lucida Handwriting looks
+best with extra line spacing, from 33% - 50% of the type body size. This
+gives more room to the lively ascenders and descenders, and helps separate
+the text into more easily readable lines.  
+
+----------------------------------------------------------------------------
+
+WINGDINGS
+
+From the traditional pen and pencil to computer mice (including the Microsoft
+Mouse and Ballpoint), and from pointing hands to computer disks and tapes,
+Wingdings offers a large set of icons, pictograms, and symbols for a wide
+range of functional and decorative uses in office, school, and home printing.
+
+Wingdings contains pencil, scissors, bell, book, and candle, mail and 
+telephone, as well as modern computer icons including files, documents, 
+clipboard, trash, window, keyboard, computer, and disks. A wide variety 
+of hand signals is provided, along with smile, frown, and neutral faces,
+ bomb, skull & crossbones, flag and pennant, airplane, sun, raindrop, and 
+snowflake, a variety of check marks and ballot boxes, religious symbols, 
+astrological signs, alternative ampersands, ornamental flowers, vines, 
+and leaves, and circled numerals in normal and reverse. 
+
+Complementary Fonts. Most of the icons, pictograms, and symbols are
+design-neutral and can be used with most any fonts in appropriate
+circumstances.  Some of the characters are designed to harmonize especially
+well with Lucida fonts. The  normal and demibold italic "et" ampersands and
+italic swash "&" ampersand are intended to be used with Lucida Bright Italic
+and Calligraphy Italic. The normal and demibold roman weight "Et" ampersands
+are intended to be used with Lucida Sans regular and Demibold. There are
+normal and Demibold weight interrobangs for both Lucida Bright and Lucida
+Sans regular and Demibold. The bold roman "&" ampersand and bold quote marks
+are for extra emphasis with Lucida Bright fonts, but can be used with other
+fonts as well. 
+
+The more delicate vine and leaf ornaments (sometimes called "fleurons") are
+also designed to harmonize well with Lucida fonts, though they can really be
+used anywhere for a festive and decorative effect. The smaller leaves in
+normal and Demibold weights work best with Lucida Bright fonts. They can be
+used as single piece ornaments to enliven title pages or chapter openings of
+books and other documents, as well as decorations on greetings, menus, and a
+wide range of festive messages. These ornaments have both left and right, and
+up and down orientations, and so can be combined into friezes, borders, and
+frames. The larger leaves have a strong and active quality that harmonizes
+well with Lucida Sans fonts, though they can also be used with other Lucida
+fonts and other fonts in general. These leaves have clockwise and
+counter-clockwise direction, as well as left and right, and up and down
+orientations, so they can be combined into attractive borders and frames with
+different dynamic effects. 
+
+------------------------------------------------------------------------
+
+
+LUCIDA BLACKLETTER
+
+Lucida Blackletter is a modern interpretation of an internationally popular 
+style of printing types used for vernacular literature in northern Europe in
+the fifteenth and sixteenth centuries. Lucida Blackletter connects today's
+computer typography to the earliest printing in the English language, for
+William Caxton, England's first printer, used a font in this style for the
+first book printed in England with place and date of printing (Westminster,
+1477). This cursive blackletter style was also very popular in France where
+it was known as "Batarde" and was extensively used by printers in the Low
+Countries (Belgium and Holland). A related style became popular in Germany,
+where it is known as "Fraktur".
+
+Lucida Blackletter is not an imitation of any historical font, but a new
+interpretation of the cursive blackletter style. Lucida Blackletter has the
+dark texture, fractured curves, and tight fitting typical of the gothic type
+styles, but it is much more relaxed, playful, and exuberant than the stiff,
+conservative "textura" blackletter once used for religious and legal
+documents and publications in Latin. To modern eyes accustomed to disciplined
+roman types, the sharp, broken shapes and sinuous swashes of Lucida
+Blackletter seem unfamiliar at first, but the forms have their own logic and
+soon become surprisingly legible to modern readers, while still expressing
+the typical gothic spirit of the scribes and printers who founded the art of
+typography and the modern age.
+
+Lucida Blackletter is not exclusively English, French, Dutch, or German in
+style, but appeals to the international spirit that typography had in its
+early days. It can be used wherever a popular style of blackletter is desired
+for "allusive" typography - to evoke an historical era, like England at the
+time Henry VIII, or France in the early Renaissance, or the American colonies
+before the Revolution. And it will also look properly quaint on the sign of
+an antique shop and dazzlingly delicious in a menu for strudels and Black
+Forest cakes. But Lucida Blackletter can be used for more than allusion; it
+is a strong, enthusiastic, and decorative script with a vigor and charm that
+stem from the very roots of typography. Thomas Jefferson, a calligrapher as
+well as a statesman, wrote a fine blackletter cursive and used in the
+Declaration of Independence for special emphasis. Modern typographers will
+likewise find new uses for the  expressive qualities of Lucida Blackletter. 
+
+
+Complementary Lucida Fonts. Lucida Blackletter aligns in the heights of
+lower-case and capitals with other Lucida text fonts, so it can be used in
+text together with other members of the family. Its swash ascenders are
+longer than most other Lucida ascenders, so when setting it in combination
+with other Lucida fonts, be sure to allow enough line spacing so that
+ascenders and descenders do not collide. In technical publishing, Lucida
+Blackletter has the proper proportions and weight to be used with the Lucida
+Math fonts, so for something a little different, it can be used as a
+substitute for the generic fraktur styles.
+
+
+Professional tips. Blackletter capitals were traditionally not designed to be
+combined into all capital settings; capitals were intended to be used with
+lower-case only. Therefore, be sparing in the use of all capital settings in
+Lucida Blackletter. The effect is striking, but takes some getting used to,
+because the all-capital Blackletter word-patterns unfamiliar to most readers.
+Lucida Blackletter is tightly fitted by the designers, so letterspacing
+should not be tightened at text sizes, though the spacing can be made tighter
+for large, display sizes. 
+
+----------------------------------------------------------------------------
+
+LUCIDA FAX
+
+Lucida Fax is a family of slab-serif fonts designed for telefaxing,
+dot-matrix printing, screen displays, and other situations where fonts must
+be rendered and reproduced at low resolutions or small sizes. 
+
+Closely related to Lucida Bright, Lucida Fax has a large x-height, clear
+letter shapes, and open counters, but is more rugged, with heavier hairlines,
+thicker and shorter slab-shaped serifs, and greater space between letters. As
+its name implies, Lucida Fax is ideal for documents that will be telefaxed,
+from simple memos to complex newsletters. 
+
+Sturdiness and open spacing also make Lucida Fax a good choice for texts that
+are composed in small sizes and reproduced by printing methods that tend to
+degrade image quality, as in newspapers, packaging and labeling. At large
+sizes, Lucida Fax can be used for display and even signage, when a sturdy,
+slab-serif font is called for. 
+
+Lucida Fax can also be used for educational printing and publishing.  Like
+traditional schoolbook fonts, Lucida Fax has the simplicity, regularity, and
+clarity that important to younger readers. Its letter forms are unambiguous,
+its spacing open, and its detailing plain.  
+ 
+Complementary Fonts. Lucida Sans, also famous as good for faxing, is the
+ideal sans-serif companion to Lucida Fax. 
+
+Lucida Handwriting offers a casual and charming contrast to the formality of
+Lucida Fax, but also has enough ruggedness to remain readable when telefaxed
+or rendered at low resolutions and small sizes. 
+
+----------------------------------------------------------------------------
+
+LUCIDA BRIGHT MATH
+
+The Lucida Bright Math fonts (Lucida Bright Math Italic, Lucida Bright Math
+Symbol, Lucida Bright Math Extension) include the mathematical signs and
+symbols most used in mathematical and technical composition. In particular,
+the Lucida Bright Math fonts contain the math characters that are standard in
+the TeX math composition software, which, in its various forms, is one of the
+most popular mathematical composition package used worldwide. In addition to
+the standard TeX character sets, Lucida Bright Math fonts include many more
+characters compatible with the sets specified in the the ISO and Unicode math
+character standards, as well as the TROFF math composition software. 
+
+Complementary Fonts. Lucida Calligraphy can be used for mathematical script
+characters, and Lucida Blackletter for mathematical blackletter/fraktur
+characters. 
+
+Lucida Bright Math fonts can be used harmoniously with most popular text
+faces, such as Times New Roman, when mathematical composition is needed. Of
+course, Lucida Math fonts harmonize very well with Lucida Bright and other
+Lucida styles. 

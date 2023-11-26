@@ -1,0 +1,426 @@
+TrueType Technical Talk #2: Linear vs. Non-Linear Scaling
+
+
+
+
+George Moore
+April 20th, 1992
+
+
+
+
+
+Copyright 1992 Microsoft Corporation.  Permission is given to freely 
+redistribute for private non-profit use provided this notice remains 
+with the document.
+-----------------
+
+
+
+The quality and legibility of the fonts that appear on your computer
+screen is also important to millions of other users worldwide.  One 
+of the great typographic strengths of TrueType that cannot be matched 
+by other font scaling solutions is its ability to perform what is 
+known as non-linear scaling.  This feature results in higher quality 
+text which is more legible on low resolution devices like computer 
+screens and 300 dpi laserprinters.  Non-linear scaling is not some 
+vague promise of something that you could do with TrueType -- it
+is implemented today in the fonts we ship with Windows 3.1.  To 
+understand why this feature is important, we have to look at one of 
+the more fundemental problems that occur in digital typography.  
+
+If you will recall from the TrueType Talk #1, all digital typographic
+systems store extremely high resolution outlines in the font itself,
+which are then scaled to the proper size for the target device.  These 
+outlines are then "hinted" to remove poor fitting of the outline to the 
+pixel grid on the screen or printer.  One of the problems that I really
+didn't discuss in the first talk is round-off error during the scaling 
+process itself.  This is a big problem.
+
+Let's say you have a lower-case letter "m" outline that you are 
+attempting to make legible at a small size on a 96dpi (VGA resolution) PC 
+screen.  The outline itself was originally stored as a series of quadratic 
+B-splines in the high-resolution Cartesian em square space of the font 
+file.  In the following crude illustration, the `*' are used to denote 
+on-curve control points in the original theoretical outline.  The numbers 
+beside the `*' are the coordinates of the individual control points in the 
+high-resolution space:
+
+    *--------* (42,200)
+    |(6,200) |                                                   (246,187)
+    |        *-------------------------------------------------------*
+    |       (42,187)                                                 |
+    |                        (108,151)                  (210,151)    |
+    |        *------------------*        *------------------*        |
+    |        |(42,151)          |        |(144,151)         |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |(6,0)   |                  |(108,0) |                  |(210,0) |
++   *--------*                  *--------*                  *--------*   +
+^          (42,0)                      (144,0)                   (246,0) ^
+|                                                                        |
+(0,0)                                                                 (252,0)
+
+The `+' denote the starting and stopping points for the character itself,
+which includes the glyph shape plus the space around it.  The gap from 
+coordinate location (0,0) to (6,0) is known as the left side-bearing.  
+Likewise, the gap from (246,0) to (252,0) is called the right side-bearing.
+These gaps are what keeps the character from running into the other 
+characters on the line of text.  In this case both side-bearings are 
+defined as 6 units in the em square space.  As you can also see, the 
+entire character occupies 252 units in the horizontal direction (known 
+as the advance width) and 200 units in the vertical direction.  Finally, 
+each vertical stem is exactly 36 units wide (because 42 - 6 = 36 and 
+144 - 108 = 36) with a gap of exactly 66 units of space between each 
+vertical stem (because 108 - 42 = 66 and 210 - 144 = 66).
+
+Now, given that, let's assume we have a scaling factor of 10 to 1,
+meaning we have to scale the outline down for a particular point size
+that is exactly one-tenth the size of the original outline.  Therefore,
+the advance width becomes 25.2 rather than 252.  Likewise, the width of
+each stem becomes 3.6 rather than 36 and the gap between the stems
+becomes 6.6 rather than 66.  This looks like it's an easy problem to
+solve since you just divide all of the numbers by 10.  But there's a
+danger in that.  Since no physical display device (either screen or
+printer) can display anything less than a pixel, you have to round all
+of the values to the nearest whole number.  A pixel, by definition, is 
+the smallest element that is used to display information.  It's like a 
+binary bit -- it's either on or it's off.  So the 3.6 pixel widths of 
+the stems become 4 pixels wide and the 6.6 pixel widths of the gaps 
+become 7 pixels wide.  Likewise, each side bearing of .6 pixels rounds
+up to 1 pixel:
+
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
+    |        |                  |        |                  |        |
++<1>*--------*  < 7 pixels >    *--------*   < 7 pixels >   *--------*<1>+
+    <4 pixels>                  <4 pixels>                  <4 pixels>
+
+So now we've got a real problem.  If you add up the high resolution
+widths for each feature in this letter (6 + 36 + 66 + 36 + 66 + 36 + 6),
+the correct width of the character is 252 units across, which rounds
+to 25 pixels after you apply the 10:1 scaling factor.  The character 
+WANTS to be 25 pixels wide, however, the character NEEDS to be 28 
+pixels wide because if you add up the individual rounded values 
+(1 + 4 + 7 + 4 + 7 + 4 + 1) you get 28.  The character grew by 12% 
+because of round-off errors.
+
+The 25 pixel answer is the linearly scaled value for that character,
+whereas the 28 pixel answer is its non-linearly scaled value.
+The non-linearly scaled value is also sometimes called its "hinted" 
+width since the hints are used to specifically make the character
+wider at certain sizes.  If you assume simple linear scaling, you have 
+to somehow fit 28 pixels into a space reserved for 25 pixels.
+
+So what do you do with those extra 3 pixels?  You could remove one 
+each from the width of each stem, making each vertical stem only 3 pixels 
+wide (instead of 4 like it should be).  But then your letter "m" will not 
+match the other letters in the same font at the same size (because the "i",
+"t", "j" and others will still be 4 pixels wide since they don't have this 
+rounding problem).  You could remove one pixel each from the gap between 
+each stem, making each gap only 6 pixels wide, but what do you do with the 
+third pixel?  You can't remove 1 from just one of the vertical stems since 
+then they wouldn't match.  You can't remove it from one of the sidebearings 
+because then the character would collide with the next one in the line.
+In short, you are stuck with a weird-looking asymmetrical character if you 
+try to base all of your calculations on the original width as stored in the 
+high-resolution em square space of the font.
+
+But the problem is even worse than what I just described.  At very 
+small point sizes on low resolution displays you sometimes don't have 
+enough pixels to represent the character with any fidelity.  Because 
+of cumulative round-off error in the scaling process, you might need 7 
+pixels to represent the letter "m" that has a linearly scaled width of 
+only 6 pixels.  What do you do?  You have the choice of the following 
+shapes:
+
+	+- - - - - -+
+	|           |
+	|  @ @ @ @ @|    <-- in this example, there is a one pixel space
+	|  @   @   @|        for the left side bearing, but no right side
+	|  @   @   @|        bearing at all, meaning the letter would run
+	|  @   @   @|        into the next one to the right of it.
+	|  @   @   @|
+	+- - - - - -+
+
+	+- - - - - -+
+	|           |
+	|  @ @ @ @  |    <-- You could fix that problem by deleting one
+	|  @   @ @  |        pixel from the center of the "m", but now it
+	|  @   @ @  |        is no longer recognizable as an "m".  You are
+	|  @   @ @  |        trading legibility for correct spacing in this
+	|  @   @ @  |        case.
+	+- - - - - -+
+
+And these examples are only using sans-serif faces.  Imagine trying to 
+squeeze serifs in there also!  But this problem is not limited to 
+only computer screens.  In reality, any font that you are trying to 
+represent below approximately 60 ppem can have this problem with 
+certain characters.  And if you do the math (from the ppem formula 
+supplied in Talk #1), you will realize that 60 ppem corresponds to 
+around 14 point at 300 dpi.  This means it is impossible to produce 
+high-quality text at 14 point and below at 300 dpi if you base all of 
+your calculations on simple linear scaling.  
+
+You'll notice that if you take this exact same letter "m" and try to 
+render it on a reasonably high resolution device, this rounding problem 
+goes away.  If you have at least 252 pixels across for the example given 
+above, there is absolutely no problem since the character will scale 
+linearly.  Now you've got two different devices (the screen and the 
+printer), each with the exact same character at the exact same point 
+size, and each reporting different widths.  Both widths are right, but 
+both are also wrong.
+
+
+
+Existing Digitial Typography Systems
+====================================
+
+Under existing systems, such as the Intellifont format from AGFA (found
+in the HP LaserJet III printer and others) and the Type-1 format from 
+Adobe (found in PostScript printers), this problem of having two "correct"
+answers for the width of each character is an incredibly hard engineering
+problem to solve.  In fact, it's an impossible problem to solve.  Remember,
+both of these systems were designed for printers first.  It took several 
+years before Adobe Type Manager was made available for Windows and the
+Macintosh.  Because the font rasterizers were originally designed to 
+exist only within the printer, there was no way to communicate the width 
+of each character back to the application in the host computer.  If you 
+do the typographically correct thing and allow non-linear scaling, the 
+width of each character will depend upon both the point size you are 
+trying to render *and* the resolution of your target device.  The ideal 
+width (i.e., the non-linearly scaled value) of a particular character at 
+5 point may be one value, but an entirely different value at 6 point, yet 
+another at 7 point, etc.  And none of these may match the easily 
+calculated linearly scaled values.  If you allow non-linear scaling, you 
+cannot successfully predict exactly what the widths of the characters 
+will be until you actually try to render each character by applying the 
+hints.
+
+Applications that are running on the host computer system connected to 
+these stand-alone printers will be attempting to figure out line breaks 
+and page breaks based upon the widths of those characters.  The only way 
+for the application to calculate these various widths is to assume that 
+all characters at all point sizes will scale linearly.  By allowing
+only linear scaling, the application on the host only needs a list of 
+the high-resolution widths for each character.  It can then do the 
+simple integer math itself to figure out how wide a character will be 
+at a certain size without having to communicate with the printer.
+
+However, later it was decided to port these font scaling solutions to
+Windows or the Macintosh.  Now the primary output device for these
+versions of the rasterizer would be a low resolution computer monitor
+running at 96 dpi (a VGA resolution screen).  Now a large percentage of 
+the time the text would be below 60 ppem (45 point @ 96 dpi), so if you 
+assume linear scaling, these characters would have to be wedged into a 
+space smaller than they should normally fit.  If those font scaling 
+programs allowed non-linear scaling for the screen they would break all 
+existing applications and the millions of fonts which had been already 
+distributed.  The end result was that screen quality had to suffer 
+because printed output (combined with backwards compatibility) is more 
+important.
+
+
+TrueType and Non-Linearity
+==========================
+
+This problem does not occur with TrueType because it was designed from 
+the very beginning to reside within the operating system of the host 
+computer, not the printer.  This way it could produce high quality text
+for both devices, without having either device suffer because of the 
+limitations of the other.
+
+Most major applications care about providing WYSIWYG linebreaks and
+pagebreaks between the screen and the printer.  When these applications 
+(such as PageMaker, Ami Pro, Word for Windows, WordPerfect for Windows, 
+etc.) first start running, one of the first things they do is ask the 
+operating system to provide a list of the widths of each character at 
+the point size you are using.  By building this list, the application 
+can figure out how wide each word will be, and therefore, how wide each 
+line will be.  In Windows 3.0 with the old-style bitmapped screen fonts,
+it was easy enough to calculate these line endings since the width
+information for each character was simply stored in the font itself and 
+no calculations were really necessary.  But with non-linear outline 
+scaling fonts, it becomes a more complex problem.
+
+The only way to figure out how wide each character will be after the
+pixel rounding occurs is to execute the hints for each character (since
+you have no idea what kind of things the hints will do to the outline).
+But even on a reasonably fast 386-based machine, the execution of all 
+the hints for all of the characters in the font could take around one 
+full second.  This is an unacceptable delay for most people who are 
+used to dealing with non-GUI applications.  For this reason, contained 
+within each TrueType font is a table called the 'hdmx' (Horizontal Device 
+Metrics) which contains precomputed widths for each character at some of 
+the more popular sizes.  In the Microsoft distributed fonts for Windows 
+3.1, we store these precomputed values from 9 to 24 ppem and then for 15 
+other popular larger sizes.  This way when the application tells Windows 
+"give me the widths of each character at 13 ppem", Windows just pulls 
+these precomputed values out of the hdmx table as necessary.  The hdmx 
+table in each font isn't that large, and so the trade-off between disk 
+space and execution speed is very good.  The hdmx table is built by the 
+font vendor when they compile the TrueType font for distribution.
+
+The addition of the hdmx table solves one problem, but it creates a new
+smaller one.  The font vendor is only going to include a limited number
+of ppem values in the 'hdmx' for some of the more popular sizes, but it's 
+entirely possible that the font will scale non-linearly past the top of
+the range of hdmx values.  However, at a certain point the font will 
+scale linearly because you will have enough pixels to faithfully 
+reproduce the shape of the characters.  When the font reaches linearity,
+the width calculations become easy.  So you have this "grey area" between 
+the top of the hdmx table range and the bottom of the linear range.  It 
+would be unacceptable to take the time hit to execute the hints simply 
+to find out the advance width for the sizes that aren't covered in the 
+hdmx table.  If an application asks for the widths of the characters at 
+75 ppem, they may be scaling linearly at that point, but the only way to 
+be sure is to execute the hints.  For this reason, we have defined another 
+table in the font file called the 'LTSH' (Linear Threshold).  The LTSH 
+table defines the point at which it is reasonable to assume linearly 
+scaled advance widths on a character-by-character basis.  Between the 
+hdmx and the LTSH tables, the fonts appear on the screen quite fast and 
+with good typographic quality.
+
+
+Existing Applications and Non-Linearity
+=======================================
+
+How do Windows or Macintosh applications cope with non-linearly scaling
+fonts?  How do they handle the scaled width of the "W" being different
+on the screen than on the printer?  As it turns out, this is not a big
+problem.  In Windows 3.0, applications had to go to great lengths to 
+make the widths of the old-style screen bitmap fonts match the widths 
+of the printer fonts.  Applications would aways calculate the widths 
+for the printer and then try to make the screen display match.  This 
+was not as easy as it sounds since you had vastly different widths, 
+not to mention character shapes, between the two devices.  For example,
+if the user selected the "Avant Garde Gothic" printer font, Windows
+might select the "Helv" screen font as the closest match -- even though
+they share little in common.  The applications used a number of tricks
+to accomplish this alignment feat.  The most common algorithm used was
+to simply add or delete extra pixels between words so that the spacing
+of the characters within the words looked right, but the spacing between
+the words was off just a little.  This way the line breaks would appear
+correct.
+
+When using TrueType fonts on the screen and printer, Windows can now do
+a much better job of matching the shapes of the characters.  So the
+applications continue to do exactly the same thing as in the past,
+except now there is a much more typographically correct font available
+for the screen.  The extra one or two pixels taken up by the "W" will
+simply be absorbed in the inter-word spacing.  However, if the 
+typographer hinting the font made all, or most, of the characters take 
+up extra space on the line, the words might start to run together since
+there are only a finite number of pixels between each word.  For this 
+reason, when Monotype produced our base 13 Windows TrueType fonts, they 
+did a little research into history.
+
+Monotype has been in business since 1897 and has almost 100 years
+experience in designing and selling type -- real type, the kind made of
+lead.  Since Monotype had to make separate pieces of lead for each letter
+of the alphabet, they have made precise charts that give the distribution
+patterns of each letter of the alphabet.  The letter A, for example, is
+used far more often than the letter X, so they would naturally make more
+A's for any given font.  As it turns out, about 70% of all documents are
+made from just 13 characters: a, c, d, e, h, i, l, n, o, r, s, t, and u.
+Anyone who has watched "Wheel of Fortune" can verify this.  So when
+Monotype hinted our base Windows fonts, they were very careful to make 
+sure that those 13 characters do not exceed the linearly scaled advance
+width.  This makes it much easier for applications to produce correctly
+justified text.  Happily, the characters that are most likely to exceed 
+their linear values (such as m and w) are not in the above list.  This 
+70% figure is holds up across all Western and Eastern European languages.
+In reality, the distribution pattern for the uppercase letters is
+slightly different than the lowercase letters, but we decided to use
+the same rules for both so that lines in all uppercase will not break
+differently than the same lines in lowercase.
+
+
+The End Result
+==============
+
+So what does this all mean for the end user?  All of this technology is
+used for one reason only: producing the highest quality text given the
+physical restrictions of the output device.  Take, for example, the
+Arial Bold "w" in TrueType format.  Since the "w" tends to have more 
+round-off errors that other letters, Monotype allowed its hinted advance 
+width to exceed the linear width on several occasions:
+
+  Pixels   PointSize   Linear Width  Hinted Width
+  Per Em   (at 96dpi)  (in pixels)   (in pixels)   Difference
+  -------  ----------  ------------  ------------  ----------
+    11         8           8.6           10             1
+    12         9           9.3           10             1
+    13        10          10.1           11             1
+    14        11          11.4           11             0
+  * 15 		(not used)
+    16        12          12.4           13             1
+    17        13          13.5           14             0
+    18        14          14.0           15             1
+
+  * If you do the math from Tech Talk #1, you will notice that both
+    14 and 15 ppem round to 11 point at 96 dpi.  Since you can only
+    have one point size for any given ppem value, the 15 ppem number
+    is not used and hence, not shown on this chart.
+
+As you can see, for 8, 9, 10, 12 and 14 point at VGA resolution,
+Monotype allowed the Arial Bold "w" to be slightly wider than it should 
+be for legibility purposes.  
+
+If you have a copy of the tool called "Zoom-In" from the Windows Software
+Development Kit, you can enlarge areas of the screen to see what pixel 
+patterns are formed by the various letters in a particular font.  For 
+an example of the asymmetries caused by forcing a character to be
+linearly scaled, I have reproduced the pixel patterns formed by the
+letter "M" by Helvetica (with ATM for Windows v2.0) and Arial (with 
+TrueType) at the exact same point size on the same screen:
+
+   ATM: Helvetica @ 13 pixels/em         TrueType: Arial @ 13 pixels/em
+        (or 10 point on VGA):                 (or 10 point on VGA):
+
+          @             @                      @               @
+          @ @         @ @                      @ @           @ @
+          @   @     @   @                      @ @           @ @
+          @   @     @   @                      @   @       @   @
+          @   @     @   @                      @   @       @   @ 
+          @   @     @   @                      @     @   @     @
+          @   @     @   @                      @     @   @     @
+          @     @   @   @                      @     @   @     @
+          @     @ @     @                      @       @       @
+          @     @       @                      @       @       @
+
+As you can see, by forcing the letter to be only 8 pixels wide (in the
+case of ATM), the "M" looks a little strange.  By deciding to allow the
+character to be 9 pixels wide (in the case of TrueType), you regain the
+symmetry that makes for a reasonable looking character.  If you wish to
+see this for yourself, make sure you turn off "Bitmap Substitution"
+in ATM under Windows or else you'll get the old-style "Helv" bitmap.
+
+In comparing many letters (and the spacing) at different point sizes,
+you'll notice that the base Monotype TrueType fonts produce more
+legible, easy to read characters than ATM.  Even if you leave "Bitmap
+Substitution" on under ATM, it doesn't help for those fonts which no
+bitmaps are available.  Windows does not distribute the bold or italic 
+bitmap versions of "Helv" or "Tms Rmn", nor does bitmap substitution
+help in the case of fonts beyond the base 13.
+
+The TrueType format has the capability to produce the best looking 
+digital fonts in the world at any resolution.  Monotype has shown that 
+this can happen with the Windows 3.1 base fonts.  The big caveat is that 
+the results from other third-party vendors will depend entirely upon the 
+hinting algorithm they choose to implement.  There will be bad-looking 
+TrueType fonts, created by people who don't know any better, just like 
+there are bad-looking Type-1 fonts created by people who don't know any
+better.  The big difference, however, is the fact that it is at least 
+possible to create scaling fonts in TrueType which are very close to 
+hand-tuned bitmaps.
+----------------------------------------------------------------------

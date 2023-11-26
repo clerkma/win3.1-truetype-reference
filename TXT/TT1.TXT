@@ -1,0 +1,589 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+
+
+
+TrueType Technical Talk #1:
+An Introduction to Digital Typography using TrueType
+
+
+
+
+
+George Moore,
+November 5th 1991
+
+
+
+
+
+
+Copyright 1991 Microsoft Corporation.  Permission is given to 
+redistribute freely for private non-profit use, provided this 
+notice remains with the document.
+-----------------
+
+
+
+In most digital type systems, whether implemented on a computer or 
+in a printer, there are just a few basic steps that the system 
+goes through in order to display characters on the target device.
+The essential steps are:
+
+	1. Load the font outline and feed it to the rasterizer.
+	2. Scale the outline to the correct size.
+	3. Fill the outline with pixels, creating a raster bitmap
+	4. Transfer the raster bitmap to the display device.
+
+Expanding upon this list gives us a more detailed look at how TrueType
+works.  I'll list the steps in order, and then talk at length about 
+each one:
+
+	1. Load the font and feed it to the rasterizer.
+	2. Scale the outline to the correct point size for the correct 
+	   resolution of the device.
+	3. Apply the hints to the outline, distorting the contours to
+	   build what is known as a hinted, or gridfitted outline.
+	4. Fill the gridfitted outline with pixels, creating a raster bitmap.
+	5. Scan for dropouts (optional).
+	6. Cache the raster bitmap.
+	7. Transfer the raster bitmap to the appropriate display device.
+
+
+Step #1: Loading the font
+=========================
+In a printer, the loading of a font is usually accomplished by the 
+printer's BIOS when it has to locate the font in ROM, or as a 
+downloaded version of the font stored in local printer RAM.  In a 
+computer, this is normally accomplished by the operating system when 
+it has to locate the font file on disk.  In Windows 3.1 in particular,
+TrueType fonts are stored as .TTF files in the system directory of 
+your Windows directory.  These .TTF files are what is known in the 
+Macintosh world as the raw `sfnt' resources.  All TrueType fonts on 
+the PC are stored and used in Motorola format using big-Endian byte 
+ordering.  All Intel and other little-Endian implementations of the 
+TrueType rasterizer perform the byte swapping on the fly in order to 
+maintain binary compatibility with the Macintosh.  TrueType fonts can 
+be installed in the system by the user running the Control Panel, or 
+via an application using the new CreateScalableFontResource() in
+conjunction with the AddFontResource() APIs.
+
+When the user selects a TrueType font from a menu, Windows will go
+out to the disk, locate the particular .TTF file and present it to the 
+TrueType rasterizer that is a part of GDI (the Graphical Device 
+Interface in Windows).  I will cover the font mapping, selection and 
+other Windows internals in a future posting since it is beyond the 
+scope of this document.
+
+
+Step #2: Scaling the outline to the correct point size
+======================================================
+I need to give a little background and break this one large complex 
+step into smaller steps so that it can be better understood:
+
+Outlines
+--------
+In a TrueType font, character shapes are described by their outlines.
+A glyph outline consists of a series of connected contours and lines,
+which are defined by a series of points that describe second order 
+(quadratic) B-splines.  The TrueType B-spline format uses two types 
+of points to define curves, those that are ON the curve and those that 
+are OFF the curve.  Any combination of off and on curve points is 
+acceptable when defining a curve.  Straight lines are defined by their
+endpoints.
+
+Generally, most professional font foundries like Monotype store their
+digitized outlines in their internal libraries in a format known as 
+Ikarus.  Ikarus was developed by a company called URW in Germany and has 
+become the standard international interchange format for unhinted digital 
+fonts.  Monotype uses a tool called SplineLab from Projective Solutions 
+to convert the Ikarus data to a raw, unhinted, skeletal TrueType file.
+Shrinkwrapped commercial end-user tools like Font Studio 2.0 from LetraSet 
+and Fontographer 3.5 from Altsys usually allow you to convert and 
+manipulate TrueType outlines from a number of different formats.
+
+FUnits and the em square
+------------------------
+In a TrueType font file, the on and off curve point locations are 
+described in font units, or FUnits.  An FUnit is the smallest measurable
+unit in the em square, which is an imaginary Cartesian coordinate square 
+in some arbitrary high resolution space that is used to size and align 
+glyphs.  The granularity of the em square is determined by the number 
+of FUnits per em, or more simply "units per em".  The greater the 
+number of units per em, the greater the precision available in 
+addressing locations within the em square.  And no, the em is not
+short for "Auntie Em" of The Wizard of Oz, but instead is a historic
+measurement in typography that refers to the space which will 
+completely contain the capital letter "M" of any given font design.  
+While this need not be strictly true in the world of digitized fonts,
+it is still a reasonable rule of thumb.  Although all Apple and 
+Microsoft distributed TrueType fonts are built with an em square of 
+2048, the TrueType rasterizer actually allows you to build any 
+particular font with any arbitrary em square size up to 32767 (from 
+coordinate locations -16384,-16384 to +16383,+16383).  Outline scaling 
+will be fastest if the units per em is chosen to be a power of 2.
+
+Scaling a glyph
+---------------
+The first step in this process is the conversion of FUnits to device 
+space, which will be dependent upon the physical resolution of the 
+target output device.
+
+The Cartesian coordinate values in the em square can be converted to
+values in the pixel coordinate system by the following formula:
+
+   (FUnit value) * (point size of the letter) * (resolution)
+  -----------------------------------------------------------
+             (72 points per inch) * (units per em)
+
+So, for example, let's say that you wanted to calculate the advance
+width for the letter "p" in a particular font (the advance width is
+how wide the character will be, including the space before and after 
+the letter).  This particular character will be at 18 point on a VGA 
+resolution screen (96 dpi).  The advance width of the letter that is 
+defined in the device independent space is 1250 FUnits, and the units 
+per em is defined for this font as 2048:
+
+         1250 * 18 * 96
+        ---------------- = 14.65 pixels wide
+            72 * 2048
+
+At 300 dpi, the same letter will be the same physical size, but because 
+the pixels are smaller it will take 45.78 pixels to represent the same
+character.  At 1200 dpi it would take 183.11 pixels.  The computed
+x-resolution size is used for metrics like the widths of characters,
+while the y-resolution is used for ascender, descender and linegap
+values.
+
+In reality, scaling is actually performed by using the above formula
+in conjunction with a standard 2x2 transformation matrix.  The 
+transformation can be computed as:
+
+      Sx(Cos theta)      -Sy(Sin theta)
+      Sx(Sin theta)       Sy(Cos theta)
+
+"Sx" is the scale factor formula from above with the "resolution" value
+set to the x-resolution of the target device.  "Sy" is the y-resolution, 
+and "theta" is the rotation angle in counter-clockwise degrees from the
+vertical.  This formula handles all rotations, shearing, and stretching
+of the outlines.  Applications under Windows 3.1 can directly
+manipulate this transformation matrix with the GetGlyphOutline() API.
+
+An em square size of 2048 may not sound particularly high, but it 
+provides an effective resolution much higher than the actual resolution 
+of the high-end 2500 dpi phototypesetters that are on the market today.
+If you do the math, you will realize that a motion of 5.89 FUnits in 
+the em square space actually corresponds to motion of just 1 pixel at 
+2500 dpi at 10 point.  Which means that if you were using 10 point text 
+with an em square of 2048, your phototypesetter would need to have an
+actual resolution of around 15000 dpi (or 225 million dots per square 
+inch) before the granularity of the em square outline would start to 
+have an effect on the number of pixels turned on or off on the actual 
+physical outline.  15000 dpi phototypesetters are not likely to come 
+on the market in the next couple of years.
+
+When you display type on a particular physical device at a specific
+point size, you gain an effective resolution measured in pixels per em
+(ppem).  The formula for calculating pixels per em is:
+
+                                 dots per inch
+        ppem = point size * -----------------------
+                             72 points to an inch
+
+It is important to realize that the raster bitmap patterns formed 
+for a glyph at any particular resolution will be the same regardless 
+of how big those pixels are (assuming there is no optical scaling going
+on, which I'll discuss later).  This seems like an obvious thing to say,
+but it's something that a lot of people don't realize until you stop
+to think about it.  This is why the ppem value is important.  Let's 
+say that you are looking at a 30 point glyph on a 96dpi screen.  The 
+ppem value for that glyph will be 30*96/72 or 40 ppem.  The 40 ppem
+bitmap pattern of the character at 30 points on a 96dpi device will be 
+*exactly the same* as the 10 point version of the same character on a 
+300 dpi device.  This is because 9.6*300/72 equals 40 ppem, and 9.6
+point rounds to 10 point (if that particular font tells the rasterizer 
+to round values to the nearest pixel, that is.  Otherwise it would be 
+9 point).  The pixels may be smaller, but they form the same raster 
+pattern.  
+
+This fact is important in both hinting of glyphs and caching of
+bitmaps, both of which are covered later.  The important point to
+remember in Step #2 is the fact that scaling an outline involves
+converting the high resolution device independent outline into an
+outline targeted for a particular display device.
+
+
+Step #3: Applying the hints
+===========================
+In an imperfect world like the one we live in, there is always theory
+and reality, and reality very rarely lives up to the theories.  The 
+theory in this case is the device independent outlines that are stored 
+in a TrueType font; the reality is that most low resolution devices
+cannot do them justice.  Compromises always occur, usually in the 
+form of poor fitting of the outline to the pixels on the output device.
+This is where hinting comes in.  Hints are used to produce legible 
+characters from the high resolution outlines on low resolution physical 
+devices below 800 dpi (depending upon the size of the character).  To
+see why this happens, examine the following drawing of a capital letter 
+sans serif "H" outline (I couldn't figure out how to draw nice serifs 
+using just ASCII characters).  The dots represent the centers of the 
+pixels which form the grid of the output device:
+.   .   .   .   .   .   .   .   .   .   .   .   .
+       +-----+                   +-----+         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       |     |                   |     |         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       |     |                   |     |         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       |     +-------------------+     |         
+.   .  |.   .   .   .   .   .   .   .  |.   .   .
+       |     +-------------------+     |         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       |     |                   |     |         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       |     |                   |     |         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       |     |                   |     |         
+.   .  |.   .|  .   .   .   .   .|  .  |.   .   .
+       +-----+                   +-----+         
+.   .   .   .   .   .   .   .   .   .   .   .   .
+Most every outline scaling system will use a simple method to
+determine which pixels to turn on or off: if the center of the pixel 
+falls inside the outline, turn it on, otherwise turn it off.  You will 
+notice that the left vertical stem of the "H" encompasses the centers 
+of a two pixel column, meaning it will be two pixels wide.  However, 
+the right vertical stem only incorporates one pixel center column, 
+meaning the left stem will be twice as wide as the right stem, EVEN 
+THOUGH BOTH STEMS ARE EXACTLY THE SAME WIDTH IN THE ORIGINAL OUTLINE
+(you can count the widths yourself to verify).  You may not actually 
+notice details like that when you are reading the text on the screen,
+instead you'll just think to yourself: "Hey, that's a pretty ugly font."
+The human eye is very good at picking out subtle abnormalities
+like that.
+
+Hints are used to distort an outline in a systematic fashion so as to 
+produce legible text.  In this case, the typographer might tell the 
+hinting mechanism to move the two stems slightly closer together:
+.   .   .   .   .   .   .   .   .   .   .   .   .
+         +-----+                 +-----+         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         |     |                 |     |         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         |     |                 |     |         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         |     +-----------------+     |         
+.   .   .|  .   .   .   .   .   .   .  |.   .   .
+         |     +-----------------+     |         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         |     |                 |     |         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         |     |                 |     |         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         |     |                 |     |         
+.   .   .|  .  |.   .   .   .   .|  .  |.   .   .
+         +-----+                 +-----+         
+.   .   .   .   .   .   .   .   .   .   .   .   .
+This way both vertical stems and the horizontal stroke will all be
+exactly one pixel wide.  The higher the resolution of the device, the 
+less you need hints because you have more pixels to play with.  If you 
+assume the above example was on a 96 dpi screen, at 300 dpi you would 
+have a little more than 3 times the grid density, and so an off-by-one 
+pixel error at 300 dpi would only be 1/3 the size of the same off-by-one 
+pixel at 96 dpi.  However, even at 300 dpi, hints are very important
+until you start to reach 100 ppem.
+
+The distortion of the outlines by the hints is accomplished in the
+TrueType rasterizer by the execution of a rich set of instructions
+which allow designers to specify how character features should be 
+rendered.  These instructions form an assembly language for font
+hinting.  Within the TrueType rasterizer is a software-based interpreter,
+much like the hardware-based CPU in a computer.  The interpreter 
+processes a stream of ordered binary instructions which take their 
+arguments from the interpreter stack and place the results back on 
+that stack.  All opcodes are 1 byte in size, but the data can be 
+either a single or double byte (word) depending upon the instruction.
+
+A small example of some TrueType code follows.  This example is a 
+subsection of the hints used for the letter "B" in Times New Roman:
+
+	SVTCA[X]
+	SRP1[], 44
+	SRP2[], 4
+	SLOOP[], 3
+	IP[], 51, 36, 0
+	CALL[], 16, 31, 27, 22, 33, 35     /* Backward Serif 22->21->16 */
+	CALL[], 15, 31, 27, 9, 33, 34      /* Forward Serif 9->10->15 */
+	IUP[X]
+	IUP[Y]
+	RS[], 8
+	JROF[], #LRnd0, *
+	SRP0[], 0
+	ALIGNRP[], 1
+
+The TrueType instruction set is fully programmable, with loops,
+conditionals, branching, math operations, etc.  As you can see from
+the example, in this particular case Monotype has defined a subroutine
+which contains all of the hints necessary to manipulate the serifs of
+Times New Roman (the "CALL[]" statements).  Besides the good programming 
+practice of saving code space, this also means that you will be 
+guaranteed that all of the serifs in a particular font will be rendered 
+identically at any given point size, thus preserving beauty and harmony 
+within a typeface.  Since most of the complex problems associated with 
+the execution of the hints can be resolved at compile-time, this allows 
+the small, fast, dumb rasterizer to execute the code very quickly at 
+run-time.
+
+The executable portion of the TrueType code is broken into three main 
+sections (ranked from least to most specific):
+	
+	1. The code that is executed when the font is first loaded,
+	   called the font program.  This is stored in the 'fpgm'
+	   table in the font file.  In the Monotype-produced fonts 
+	   for Windows 3.1, the fpgm is generally used for subroutine 
+	   definitions.
+	2. The code that is executed any time there is a point size
+	   change, transformation change, device resolution change, or 
+	   spot size change.  This is called the control value program 
+	   and is stored in the 'prep' table.
+	3. The code that is attached to individual glyphs which is 
+	   stored in the 'glyf' table.
+
+This offers great flexibility in scope of certain operations which can
+be triggered by specific events within the rasterizer.  The code to
+manipulate the font-wide serif subroutines would probably go in the
+font program ('fpgm') and actually be called in the individual glyph 
+program.  However, the code which makes sure the center of the "e" 
+doesn't close up at small point sizes would only go in the glyph 
+program.  Since the code can be localized to specific events, another 
+interesting thing that can be done is use similar subroutines stored 
+in the font program for all members of a typeface family (light, regular,
+demibold, bold, heavy, black, etc.) which would maintain similar visual 
+consistency across the entire family.
+
+The control value program mentioned in section #2 above is run to set 
+up values in the control value table (known as the CVT) which allows 
+for common control values to be applied across all of the glyphs in a 
+font.  For example, you might want all of the glyphs in a font to jump 
+from a stem width of two pixels at 17 point to three pixels at 18
+point, again for visual consistency.  This can be easily accomplished 
+by plugging the right values into the CVT in conjunction with the Move
+Indirect Relative Point (MIRP) opcode.  The CVT is also useful for 
+passing information between the various elements in a special kind of 
+glyph, known as a composite glyph, which can be built up from several 
+different elements within a font.  A good example of composite glyphs 
+are the accented characters located above ANSI 0x7F, such as "A acute".
+In the case of "A acute", you can simply take the glyph of the "A" and 
+merge it with the "acute" accent to form a completely new glyph that is 
+actually comprised of two different elements.  This saves both code space 
+and hinting time.  Composite glyphs can also be used in conjunction with
+any transformation to save a lot of space within a font.  For example,
+if the font design allowed it, you could create the comma, open single 
+quote, close single quote, open double quote, close double quote and
+baseline double quotes all by various transformations of a single font 
+element which need only be hinted once.
+
+If you change the size of the character, the resolution of the device,
+or the transformation of the outline (by rotation, skewing, etc.), you
+have to re-execute the hints for that specific raster bitmap pattern.
+In the Microsoft and Apple distributed TrueType system fonts, hints are 
+turned off during any non-standard outline transformation.  Only for
+rotations of orthogonal angles (90, 180 and 270 degrees) are hints
+used since the alignment of the outline to the grid will be the same
+in those cases.  There *are* hinting algorithms which could be executed
+in TrueType which are rotation invariant, however we do not make use 
+of them.  Most other digital font formats do not provide hints under 
+rotation either (however, some versions of the Intellifont rasterizer 
+leave hints on under rotation so that they can use the "black distance"
+information to embolden the font if a bold version is not available).
+It is easy to turn off the execution of hints under rotation with 
+the INSTRCTRL[] opcode.
+
+Writing raw TrueType instructions can be a very time consuming and
+error-prone chore, just like writing in any form of assembly language.
+It is also not a good idea to make typographers, who are artists, learn 
+a computer science approach to doing their job.  This is where the 
+availability of good tools comes in.  There can be many approaches to 
+hinting fonts, but the method that Monotype has been using for our base 
+Windows fonts has been with the use of a high-end tool called "TypeMan" 
+from a company named Type Solutions.  TypeMan will first make a 
+best-guess for the hinting of the font by running its own autohinter on 
+the glyphs first.  It then allows you to tweak the generated code it 
+produced in a high-level language format which will then be compiled 
+down into raw TrueType instructions.  Like any good compiler, it checks 
+syntax, resolves "linking" problems in addition to doing quite a few 
+other housekeeping duties within the fonts.  Type Solutions can be 
+reached at (603) 382-6400 for information about this and other tools.
+
+Using TypeMan is one approach to generating TrueType fonts.  Another
+is conversion of existing fonts to TrueType format.  The TrueType 
+instruction set is a superset of all known hinting methods, so 
+it is theoretically possible to convert any other hints to TrueType 
+hints.  In fact, it's more than a theory -- this is exactly how 
+several font foundries are producing their initial set of TrueType 
+fonts.  They simply take their existing hinted fonts and recompile
+them in TrueType format.  This allows a very large library of fonts 
+to be created rather quickly.  And since the hints are being 
+transferred directly, there is no degradation of the quality of the 
+resulting bitmaps.
+
+Other companies, like Bitstream and AGFA/Compugraphic, will take their 
+existing fonts, convert their own hints to TrueType hints, and then go 
+back and do extra work on the font.  They have developed a production 
+environment that allows them to take their existing library of outline 
+fonts and add the appropriate hinting and font file structure needed 
+to support new font technologies.
+
+TrueType is the only digital type system available on the PC or the
+Macintosh which provides this arbitrary, user-defined, flexible, 
+algorithmic approach as a hinting mechanism.  This works well for 
+many different languages, since the hinting algorithms you would use 
+for Latin fonts will be different than for Kanji, Chinese, Korean, 
+Arabic, Hebrew, Devanagari, Telugu, Kannada, Sinhalese, Bengali, 
+Gurmukhi, etc.
+
+
+Step #4: Fill the outline, creating a raster bitmap
+===================================================
+In order to first fill an outline with pixels efficiently, it is 
+desirable to decompose the curves into scanlines so as to create an 
+edge list (some people call it an edge table).  This list contains all 
+of the edges of the contours sorted by their smaller y-coordinates so 
+that the filling algorithm does not have to calculate intersections 
+with the outlines at every single pixel location.  More information 
+on this process can generally be found in any introductory computer 
+graphics textbook and it is not worth going into detail here.
+
+This is a very quick step since all of the hard work has already been 
+done.  The outline has already been distorted to correspond to the 
+size of the pixels (step #3), and the system already knows where the 
+edges of the outlines with respect to the grid are located (step #4a).
+All the filling algorithm has to do at this point is decide if the 
+center of each pixel is enclosed within the outline.  If it is, you 
+simply turn that pixel on, otherwise leave it off.
+
+
+Step #5: Scan for dropouts
+==========================
+"Tune in, turn on, and drop-out" was the motto for millions of
+people during the 1960's, although it could very well be applied to 
+portions of digital typography today.  Tuning the outline for the 
+grid, turning pixels on and checking for dropouts are three of 
+the major components of any font scaling system.
+
+A pixel dropout occurs whenever there is a connected region of a 
+glyph interior that contains two black pixels that cannot be connected 
+by a straight line that only passes through those black pixels.  In the 
+following close-up example you can see that the outline for the center-
+bar of the letter "H" happens to go between two rows of pixels:
+.     .    |.     . |   .     .     .     .   | .     .|    .     .
+           |        |                         |        |
+           |        |                         |        |
+           |        |                         |        |
+.     .    |.     . |   .     .     .     .   | .     .|    .     .
+           |        +-------------------------+        |
+           |                                           |
+           |        +-------------------------+        |
+.     .    |.     . |   .     .     .     .   | .     .|    .     .
+           |        |                         |        |
+           |        |                         |        |
+           |        |                         |        |
+.     .    |.     . |   .     .     .     .   | .     .|    .     .
+This is one example of a dropout (although this one could be corrected
+with some appropriate hints).  Another more difficult one to fix (and
+more difficult to illustrate in ASCII) could happen on a thin curve that 
+just happened to pass between two pixel centers.
+
+It is possible to test for potential dropouts by looking at an
+imaginary line segment connecting two adjacent pixel centers.  If this
+line segment is intersected by both a on-Transition contour and an
+off-Transition contour, a potential dropout condition exists.  The
+potential dropout only becomes an actual dropout if the two contour
+lines continue on in both directions to cut other line segments
+between adjacent pixel centers.  If the two contours join together
+immediately after crossing a scan line (forming a stub), a dropout
+does not occur, although a stem of the glyph may become shorter than
+desired.
+
+Depending upon the glyph shapes, dropout control can be a time-expensive
+operation.  For this reason it is an optional step that can be turned 
+on or off by the TrueType SCANCTRL[] opcode.  It is worth noting that
+you can turn SCANCTRL[] on or off on a per character basis depending
+upon the size of the glyph (its ppem value).  For example, a character
+like the letter "I" will generally not have dropouts even at low ppem 
+values, so you can speed up its rasterization by turning SCANCTRL[] off.
+However, the character "@" is very difficult to image because of all 
+the delicate curves involved, so you might want to leave SCANCTRL[] on 
+for even large sizes (in some of the fonts that we ship in Windows 3.1,
+SCANCTRL[] for the "@" symbol is left on up to 60 ppem).  It is up to 
+the individual font vendor to weigh the tradeoffs involved with dropout 
+control.  For example, a vendor selling barcode fonts probably wouldn't
+need it at all.
+
+
+Step #6: Cache the raster bitmap
+================================
+Steps #6 and #7 are not so much a part of the rasterizer, but more
+a part of the environment that the rasterizer is implemented in.
+
+For most Latin fonts of only a couple hundred characters each, a cache 
+of any reasonable size makes the speed of the rasterizer almost 
+meaningless.  This is because the rasterizer only runs once, the 
+first time you select a font or a new point size, and from then on 
+the bitmaps are transferred out of the cache to the screen or page 
+buffer.  If you are editing a document with a particular font, chances 
+are that 99.9% of the time the font is used on the screen it is being 
+transferred from the cache.
+
+In Windows 3.1, all TrueType bitmaps at all ppem values are cached
+automatically in the kernel's private memory arena.  And since the 
+Windows kernel will make use of all unused memory in the system as its 
+cache, this means you could have a font cache of several megabytes.  If 
+you are running in protect mode on the 80386, Windows will also page 
+bitmap caches to the swap file when physical memory is filled.  This 
+means you could have, for example, 32 megabytes of virtual font cache 
+on an 8 megabyte machine.  With the advent of the new virtual disk 
+driver in Windows 3.1 running in protect mode (called "fastdisk"), it 
+is faster to load cached bitmaps from disk than to re-render the 
+character from scratch.  The kernel uses an LRU system to discard old 
+data when memory fills up, or when an application asks for extra 
+memory in low memory conditions.  But generally speaking, not much 
+is ever flushed from the cache since most swap partitions are so large 
+in relation to the data that is being cached.  This is in stark 
+contrast to third-party font scaling solutions which use a smaller 
+fixed cache which cannot be dynamically allocated to other programs.
+These take memory away from applications in low memory conditions and 
+do not make the best use of free memory when it is available.
+
+The caching keys used by GDI in the selection of the pre-rendered 
+raster bitmaps are specific to the transformations applied to the glyph 
+and to the effects of optical scaling (which is a venerable typographic 
+concept which allows for changes in the shapes of the glyphs depending 
+upon not only the ppem value, but also the pointsize).
+
+
+Step #7: Transfer the raster bitmap from the cache to the display
+=================================================================
+This step is also implementation specific.  Most printers have a
+dedicated blitting chip which can quickly blast bitmaps from the local
+printer cache to the page buffer.
+
+Under Windows 3.1, it really depends upon what kind of hardware you
+have in your machine as to how this step is accomplished.  If you have
+a video card which contains a hardware blitter (which is generally a
+swell thing to have under Windows anyway), the font bitmaps can be
+quickly moved from the cache via a direct DMA transfer.  If you have a
+normal video subsystem in your PC, Windows will handle the transfer of
+the bitmap via software, which is still reasonably quick.
+
+Of probable equal importance to the transfer of the bitmaps to the 
+screen is the communication of the metrics information in the font to 
+the applications in the system.  The new TrueType APIs will return 
+many useful values, such as left and right sidebearing values for
+individual characters, x-height of the font, em square size, subscript
+and superscript size values, underline position, strikeout position,
+typographic ascent, typographic descent, typographic linegap, the 
+italic angle of the font (useful for making an insertion cursor match 
+the angle of the font), and many other interesting things.
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
